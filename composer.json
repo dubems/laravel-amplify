@@ -1,0 +1,12 @@
+{
+    "name": "dubems/laravel-amplify",
+    "description": "Amplify payments library for laravel",
+    "type": "library",
+    "authors": [
+        {
+            "name": "dubems",
+            "email": "nriagudubem@yahoo.com"
+        }
+    ],
+    "require": {}
+}
