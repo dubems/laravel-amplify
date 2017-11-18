@@ -11,9 +11,17 @@ class Amplify
      * @var
      */
     private $merchantId;
-
+    /**
+     * @var
+     */
     private $apikey;
+    /**
+     * @var
+     */
     private $paymentUrl;
+    /**
+     * @var
+     */
     private $redirectUrl;
 
     public function __construct()
@@ -38,9 +46,11 @@ class Amplify
         $this->paymentUrl = Config('amplify.paymentUrl');
     }
 
-    public function setRedirectUrl(){
+    public function setRedirectUrl()
+    {
         $this->redirectUrl = Config('amplify.redirectUrl');
     }
+
     public function getMerchantId()
     {
         return $this->merchantId;
@@ -53,11 +63,12 @@ class Amplify
 
     public function getPaymentUrl()
     {
-
+        return $this->paymentUrl;
     }
 
-    public function getRedirectUrl(){
-
+    public function getRedirectUrl()
+    {
+        return $this->redirectUrl;
     }
 
     public function initiatePayment()
@@ -66,13 +77,19 @@ class Amplify
             'merchantId' => $this->getMerchantId(),
             'apiKey' => $this->getApiKey(),
             'transID' => $this->generateTransId(),
-            'customerEmail'=> request()->email,
-            'customerName'=> request()->name,
-            'Amount'=> request()->amount,
+            'customerEmail' => request()->email,
+            'customerName' => request()->name,
+            'Amount' => request()->amount,
             'redirectUrl' => $this->getRedirectUrl(),
             'paymentDescription' => request()->description,
-            'planId'=> request()->planId
+            'planId' => request()->planId
         ];
+
+        try {
+            
+        } catch (InitiatePaymentException ex) {
+            
+        }
 
         return $this;
     }
