@@ -21,6 +21,11 @@ return [
     /**
      * Amplify payment Url
      */
-    'paymentUrl' => getenv('AMPLIFY_PAYMENT_URL')
+    'paymentUrl' => getenv('AMPLIFY_PAYMENT_URL'),
+    
+    /**
+     * Redirect Url after successful transaction
+     */
+    'redirectUrl' => getenv('AMPLIFY_REDIRECT_URL')
     
 ];
