@@ -67,6 +67,10 @@ class Amplify
         return $this->redirectUrl;
     }
 
+    /** Initiate payment
+     * Make a request to Amplify to return paymentUrl
+     * @return $this
+     */
     public function initiatePayment()
     {
         $url = '/merchant/transact';
@@ -82,6 +86,7 @@ class Amplify
             'planId' => request()->planId
         ];
 
+        array_filter($data);
         $this->response = HttpUtilityService::makePostRequest($url, $data);
 
         return $this;
@@ -95,11 +100,11 @@ class Amplify
     {
         $this->response = $this->initiatePayment();
         $this->paymentUrl = $this->response['PaymentUrl'];
-        
+
         return $this;
     }
 
-    /**
+    /**Redirect to the paymentUrl
      * @return mixed
      */
     public function redirect()
@@ -107,13 +112,26 @@ class Amplify
         return redirect($this->paymentUrl);
     }
 
-    public function makePostRequest()
+    /**
+     * Verify the transaction
+     */
+    public function transactionIsVerified()
     {
+        $url = 'merchant/verify';
+        $data = ['transactionRef' => request()->tran_response, 'merchantId' => request()->merchantId];
+
+        $this->response = HttpUtilityService::makeGetRequest($data, $url);
+    }
+
+    /**Handle payment Callback
+     * @return mixed
+     */
+    public function handlePaymentCallback()
+    {
+        if ($this->transactionIsVerified()) return $this->response;
+
+        
 
     }
 
-    public function makeGetRequest()
-    {
-
-    }
 }

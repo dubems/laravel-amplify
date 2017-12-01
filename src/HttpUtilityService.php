@@ -7,9 +7,24 @@
  */
 class HttpUtilityService
 {
-    public static function makeGetRequest()
+    public static function makeGetRequest(array $data, $url)
     {
+        $client = new Client([
+            'base_uri' => Config('amplify.paymentUrl'),
+        ]);
 
+        try {
+            $response = $client->request('GET', '/merchant/verify', [
+                'query' => $data
+            ]);
+
+            $responseData = $response->getBody()->getContents();
+
+            return \GuzzleHttp\json_decode($responseData, true);
+
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
     }
 
     public static function makePostRequest($url, array $data)
@@ -23,14 +38,14 @@ class HttpUtilityService
                 'form_params' => $data
             ]);
 
+            $responseData = $response->getBody()->getContents();
+
+            return \GuzzleHttp\json_decode($responseData, true);
+
         } catch (Exception $ex) {
             return $ex->getMessage();
         }
-        
-        $responseData = $response->getBody()->getContents();
-        
-        return \GuzzleHttp\json_decode($responseData,true);
-        
+
     }
 
 
