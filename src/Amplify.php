@@ -117,7 +117,7 @@ class Amplify
      */
     public function transactionIsVerified()
     {
-        $url = 'merchant/verify';
+        $url = '/merchant/verify';
         $data = ['transactionRef' => request()->tran_response, 'merchantId' => request()->merchantId];
 
         $this->response = HttpUtilityService::makeGetRequest($data, $url);
@@ -125,12 +125,13 @@ class Amplify
 
     /**Handle payment Callback
      * @return mixed
+     * @throws Exception
      */
     public function handlePaymentCallback()
     {
         if ($this->transactionIsVerified()) return $this->response;
 
-        
+        throw new Exception("Transaction was not verified successfully");
 
     }
 

@@ -14,7 +14,7 @@ class HttpUtilityService
         ]);
 
         try {
-            $response = $client->request('GET', '/merchant/verify', [
+            $response = $client->request('GET', $url, [
                 'query' => $data
             ]);
 
