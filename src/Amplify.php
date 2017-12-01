@@ -24,11 +24,12 @@ class Amplify
      */
     private $redirectUrl;
 
+    private $response;
+
     public function __construct()
     {
         $this->setAPIKey();
         $this->setMerchantId();
-        $this->setPaymentUrl();
     }
 
     public function setMerchantId()
@@ -39,11 +40,6 @@ class Amplify
     public function setAPIKey()
     {
         $this->apikey = Config::get('amplify.apiKey');
-    }
-
-    public function setPaymentUrl()
-    {
-        $this->paymentUrl = Config('amplify.paymentUrl');
     }
 
     public function setRedirectUrl()
@@ -73,6 +69,7 @@ class Amplify
 
     public function initiatePayment()
     {
+        $url = '/merchant/transact';
         $data = [
             'merchantId' => $this->getMerchantId(),
             'apiKey' => $this->getApiKey(),
@@ -85,21 +82,37 @@ class Amplify
             'planId' => request()->planId
         ];
 
-        try {
-            
-        } catch (InitiatePaymentException ex) {
-            
-        }
+        $this->response = HttpUtilityService::makePostRequest($url, $data);
 
         return $this;
     }
 
+    /** Get paymentURl from Amplify
+     * Makes a request to Amplify initiate payment Request
+     * @return $this
+     */
     public function getAuthorizationUrl()
     {
-        $response = $this->initiatePayment();
+        $this->response = $this->initiatePayment();
+        $this->paymentUrl = $this->response['PaymentUrl'];
+        
+        return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function redirect()
+    {
+        return redirect($this->paymentUrl);
+    }
+
+    public function makePostRequest()
+    {
+
+    }
+
+    public function makeGetRequest()
     {
 
     }
