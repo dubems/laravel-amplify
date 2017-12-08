@@ -7,6 +7,12 @@
  */
 class HttpUtilityService
 {
+    /** Make get request
+     *
+     * @param array $data
+     * @param $url
+     * @return mixed|string
+     */
     public static function makeGetRequest(array $data, $url)
     {
         $client = new Client([
@@ -27,6 +33,12 @@ class HttpUtilityService
         }
     }
 
+    /**Make post request
+     *
+     * @param $url
+     * @param array $data
+     * @return mixed|string
+     */
     public static function makePostRequest($url, array $data)
     {
         $client = new Client([
@@ -45,8 +57,34 @@ class HttpUtilityService
         } catch (Exception $ex) {
             return $ex->getMessage();
         }
-
     }
 
+    /**Make put request
+     *
+     * @param $url
+     * @param $queryParam
+     * @param array $data
+     * @return mixed|string
+     */
+    public static function makePutRequest($url,$queryParam, array $data)
+    {
+        $client = new Client([
+            'base_uri' => Config('amplify.paymentUrl'),
+        ]);
+
+        try {
+            $response = $client->request('PUT', $url, [
+                'query' => $queryParam,
+                'form_params'=> $data
+            ]);
+
+            $responseData = $response->getBody()->getContents();
+
+            return \GuzzleHttp\json_decode($responseData, true);
+
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+    }
 
 }

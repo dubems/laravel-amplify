@@ -32,42 +32,31 @@ class Amplify
         $this->setMerchantId();
     }
 
-    public function setMerchantId()
-    {
-        $this->merchantId = Config::get('amplify.merchantId');
-    }
-
     public function setAPIKey()
     {
         $this->apikey = Config::get('amplify.apiKey');
     }
 
-    public function setRedirectUrl()
+    public function setMerchantId()
     {
-        $this->redirectUrl = Config('amplify.redirectUrl');
+        $this->merchantId = Config::get('amplify.merchantId');
     }
 
-    public function getMerchantId()
+    /** Get paymentURl from Amplify
+     *
+     * Makes a request to Amplify initiate payment Request
+     * @return $this
+     */
+    public function getAuthorizationUrl()
     {
-        return $this->merchantId;
-    }
+        $this->response = $this->initiatePayment();
+        $this->paymentUrl = $this->response['PaymentUrl'];
 
-    public function getApiKey()
-    {
-        return $this->apikey;
-    }
-
-    public function getPaymentUrl()
-    {
-        return $this->paymentUrl;
-    }
-
-    public function getRedirectUrl()
-    {
-        return $this->redirectUrl;
+        return $this;
     }
 
     /** Initiate payment
+     *
      * Make a request to Amplify to return paymentUrl
      * @return $this
      */
@@ -75,8 +64,8 @@ class Amplify
     {
         $url = '/merchant/transact';
         $data = [
-            'merchantId' => $this->getMerchantId(),
-            'apiKey' => $this->getApiKey(),
+            'merchantId' => $this->merchantId,
+            'apiKey' => $this->apikey,
             'transID' => $this->generateTransId(),
             'customerEmail' => request()->email,
             'customerName' => request()->name,
@@ -92,16 +81,14 @@ class Amplify
         return $this;
     }
 
-    /** Get paymentURl from Amplify
-     * Makes a request to Amplify initiate payment Request
-     * @return $this
-     */
-    public function getAuthorizationUrl()
+    public function getRedirectUrl()
     {
-        $this->response = $this->initiatePayment();
-        $this->paymentUrl = $this->response['PaymentUrl'];
+        return $this->redirectUrl;
+    }
 
-        return $this;
+    public function setRedirectUrl()
+    {
+        $this->redirectUrl = Config('amplify.redirectUrl');
     }
 
     /**Redirect to the paymentUrl
@@ -112,18 +99,8 @@ class Amplify
         return redirect($this->paymentUrl);
     }
 
-    /**
-     * Verify the transaction
-     */
-    public function transactionIsVerified()
-    {
-        $url = '/merchant/verify';
-        $data = ['transactionRef' => request()->tran_response, 'merchantId' => request()->merchantId];
-
-        $this->response = HttpUtilityService::makeGetRequest($data, $url);
-    }
-
     /**Handle payment Callback
+     *
      * @return mixed
      * @throws Exception
      */
@@ -133,6 +110,115 @@ class Amplify
 
         throw new Exception("Transaction was not verified successfully");
 
+    }
+
+    /**
+     * Verify the transaction
+     */
+    public function transactionIsVerified()
+    {
+        $url = '/merchant/verify';
+        $data = ['transactionRef' => request()->tran_response, 'merchantId' => request()->merchantId];
+        $this->response = HttpUtilityService::makeGetRequest($data, $url);
+
+        return $this->response["StatusDesc"] == 'Approved' ? true : false;
+
+    }
+
+    /** Charge returning customers
+     *
+     * @param array $data
+     * $data = ['transactionRef'=> 'q343sfd',
+     * 'authCode' => 'w343ddd',
+     * 'amount' => '400',
+     * 'paymentDescription' => 'Description for payment',
+     * 'customerEmail' => 'nriagudubem@gmail.com']
+     * @return mixed|string
+     */
+    public function chargeReturningCustomer(array $data)
+    {
+        $url = '/merchant/returning/charge';
+
+        $data = [
+            'merchantId' => $this->merchantId,
+            'apiKey' => $this->apikey,
+            'transactionRef' => $data["transactionRef"],
+            'authCode' => $data["authCode"],
+            'Amount' => $data["amount"],
+            'paymentDescription' => $data["paymentDescription"],
+            'customerEmail' => $data["customerEmail"]
+        ];
+
+        return HttpUtilityService::makePostRequest($url, $data);
+    }
+
+    /** Create Subscription
+     *
+     * @param $data
+     * @return mixed|string
+     */
+    public function createSubscription(array $data)
+    {
+        if ($this->validateFrequency($data)) {
+            $url = '/merchant/plan';
+            $data = [
+                'merchantId' => $this->merchantId,
+                'apiKey' => $this->apikey,
+                'planName' => $data["planName"],
+                'frequency' => $data["frequency"]
+
+            ];
+
+            $this->response = HttpUtilityService::makePostRequest($url, $data);
+        }
+
+        return $this->response ? $this->response : null;
+    }
+
+    /** Validate Frequency of Subscription
+     *
+     * @param array $data
+     * @return bool
+     * @throws Exception
+     */
+    protected function validateFrequency(array $data)
+    {
+        $allFrequency = ['Weekly', 'Monthly', 'Three_Months', 'Six_Months', 'Annually', 'Custom'];
+        $frequency = $data["frequency"];
+
+        if ($frequency && in_array($frequency, $allFrequency)) {
+
+            return true;
+        } else {
+            throw new Exception('The supplied Subscription frequency is not valid');
+        }
+    }
+
+    /**Update subscription
+     *
+     * @param $planId
+     * @param array $data
+     * @return mixed|null|string
+     * @throws Exception
+     */
+    public function updateSubscription($planId, array $data)
+    {
+        if ($this->validateFrequency($data)) {
+            $url = '/merchant/plan';
+            $queryParams = ['PlanId' => $planId];
+
+            $data = [
+                'merchantId' => $this->merchantId,
+                'apiKey' => $this->apikey,
+                'planName' => $data["planName"],
+                'frequency' => $data["frequency"]
+
+            ];
+
+            $this->response = HttpUtilityService::makePutRequest($url, $queryParams, $data);
+        }
+
+        return $this->response ? $this->response : null;
     }
 
 }
