@@ -12,7 +12,7 @@ class AmplifyServiceProvider
 {
     public function boot()
     {
-        $config = realpath(__DIR__.'/..resources/config/amplify.php');
+        $config = realpath(__DIR__.'/../resources/config/amplify.php');
 
         $this->publishes([
             $config => config_path('amplify.php')
