@@ -5,6 +5,8 @@
  * Date: 11/4/17
  * Time: 11:28 PM
  */
+namespace Dubems\Amplify;
+
 class Amplify
 {
     /**
