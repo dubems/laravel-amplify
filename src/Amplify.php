@@ -7,6 +7,9 @@
  */
 namespace Dubems\Amplify;
 
+use Exception;
+use HttpUtilityService;
+
 class Amplify
 {
     /**
@@ -42,6 +45,21 @@ class Amplify
     public function setMerchantId()
     {
         $this->merchantId = Config::get('amplify.merchantId');
+    }
+
+    /**
+     * Generate Transaction ID each transaction
+     */
+    public function generateTransId()
+    {
+        $numberPool = range(0, 9);
+        $alphaPool = range('a', 'z');
+        $upperCaseAlphaPool = range('A', 'Z');
+        $arrayPool = array_merge($numberPool, $alphaPool, $upperCaseAlphaPool);
+        shuffle($arrayPool);
+        $tranxId = array_slice($arrayPool, 0, 16);
+
+        return $tranxId;
     }
 
     /** Get paymentURl from Amplify
@@ -83,6 +101,9 @@ class Amplify
         return $this;
     }
 
+    /**
+     * Return redirect url
+     */
     public function getRedirectUrl()
     {
         return $this->redirectUrl;
@@ -199,7 +220,7 @@ class Amplify
     /**Update subscription
      *
      * @param $planId
-     * @param array $data: ['planName'=>XYZ,'frequency'=>'Weekly']
+     * @param array $data : ['planName'=>XYZ,'frequency'=>'Weekly']
      * @return mixed|null|string
      * @throws Exception
      */
@@ -226,7 +247,7 @@ class Amplify
 
     /** Unsubscribe a customer from a plan
      *
-     * @param array $data: ['transactionRef'=>2123ss,'customerEmail'=>'nriagudubem@gmail.com','planId'=>1234]
+     * @param array $data : ['transactionRef'=>2123ss,'customerEmail'=>'nriagudubem@gmail.com','planId'=>1234]
      * @return mixed|string
      */
     public function unsubscribeCustomer(array $data)
@@ -262,11 +283,11 @@ class Amplify
     {
         $url = '/merchant/plan';
         $payload = [
-            'merchantId'=> $this->merchantId,
+            'merchantId' => $this->merchantId,
             'apiKey' => $this->apikey
         ];
 
-        return HttpUtilityService::makeGetRequest($payload,$url);
+        return HttpUtilityService::makeGetRequest($payload, $url);
     }
 
 }

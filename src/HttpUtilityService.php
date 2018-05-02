@@ -66,7 +66,7 @@ class HttpUtilityService
      * @param array $data
      * @return mixed|string
      */
-    public static function makePutRequest($url,$queryParam, array $data)
+    public static function makePutRequest($url, $queryParam, array $data)
     {
         $client = new Client([
             'base_uri' => Config('amplify.paymentUrl'),
@@ -75,7 +75,7 @@ class HttpUtilityService
         try {
             $response = $client->request('PUT', $url, [
                 'query' => $queryParam,
-                'form_params'=> $data
+                'form_params' => $data
             ]);
 
             $responseData = $response->getBody()->getContents();
