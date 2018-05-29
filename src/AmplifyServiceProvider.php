@@ -8,8 +8,14 @@
 
 namespace Dubems\Amplify;
 
-class AmplifyServiceProvider
+use Illuminate\Support\ServiceProvider;
+
+class AmplifyServiceProvider extends ServiceProvider
 {
+
+    protected $defer = false;
+
+
     public function boot()
     {
         $config = realpath(__DIR__.'/../resources/config/amplify.php');
@@ -22,7 +28,16 @@ class AmplifyServiceProvider
     public function register()
     {
         $this->app->bind('laravel-amplify',function(){
-            return new Amplify();
+            return new Amplify;
         });
+    }
+
+    /**
+     * Get the services provided by the provider
+     * @return array
+     */
+    public function provides()
+    {
+        return ['laravel-amplify'];
     }
 }
