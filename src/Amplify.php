@@ -8,6 +8,7 @@
 namespace Dubems\Amplify;
 
 use Exception;
+use Illuminate\Support\Facades\Config;
 use HttpUtilityService;
 
 class Amplify
