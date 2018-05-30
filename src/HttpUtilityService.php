@@ -5,6 +5,13 @@
  * Date: 12/1/17
  * Time: 10:03 PM
  */
+
+namespace Dubems\Amplify;
+
+use Exception;
+use Illuminate\Support\Facades\Config;
+use GuzzleHttp\Client;
+
 class HttpUtilityService
 {
     /** Make get request
@@ -16,7 +23,7 @@ class HttpUtilityService
     public static function makeGetRequest(array $data, $url)
     {
         $client = new Client([
-            'base_uri' => Config('amplify.paymentUrl'),
+            'base_uri' => Config::get('amplify.paymentUrl'),
         ]);
 
         try {
@@ -42,7 +49,7 @@ class HttpUtilityService
     public static function makePostRequest($url, array $data)
     {
         $client = new Client([
-            'base_uri' => Config('amplify.paymentUrl'),
+            'base_uri' => Config::get('amplify.paymentUrl'),
         ]);
 
         try {
@@ -69,7 +76,7 @@ class HttpUtilityService
     public static function makePutRequest($url, $queryParam, array $data)
     {
         $client = new Client([
-            'base_uri' => Config('amplify.paymentUrl'),
+            'base_uri' => Config::get('amplify.paymentUrl'),
         ]);
 
         try {

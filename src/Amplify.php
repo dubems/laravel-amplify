@@ -9,7 +9,6 @@ namespace Dubems\Amplify;
 
 use Exception;
 use Illuminate\Support\Facades\Config;
-use HttpUtilityService;
 
 class Amplify
 {
@@ -32,17 +31,27 @@ class Amplify
 
     private $response;
 
+    /**
+     *
+     */
     public function __construct()
     {
         $this->setAPIKey();
         $this->setMerchantId();
+        $this->setRedirectUrl();
     }
 
+    /**
+     * 
+     */
     public function setAPIKey()
     {
         $this->apikey = Config::get('amplify.apiKey');
     }
 
+    /**
+     * 
+     */
     public function setMerchantId()
     {
         $this->merchantId = Config::get('amplify.merchantId');
@@ -58,7 +67,8 @@ class Amplify
         $upperCaseAlphaPool = range('A', 'Z');
         $arrayPool = array_merge($numberPool, $alphaPool, $upperCaseAlphaPool);
         shuffle($arrayPool);
-        $tranxId = array_slice($arrayPool, 0, 16);
+        $result = array_slice($arrayPool, 0, 16);
+        $tranxId = implode('',$result);
 
         return $tranxId;
     }
@@ -67,13 +77,18 @@ class Amplify
      *
      * Makes a request to Amplify initiate payment Request
      * @return $this
+     * @throws Exception
      */
     public function getAuthorizationUrl()
     {
-        $this->response = $this->initiatePayment();
-        $this->paymentUrl = $this->response['PaymentUrl'];
+        $this->initiatePayment();
+        if( is_array($this->response) && array_has($this->response,'PaymentUrl')){
+            $this->paymentUrl = $this->response['PaymentUrl'];
+            return $this;
 
-        return $this;
+        }else{
+            throw new Exception($this->response);
+        }
     }
 
     /** Initiate payment
@@ -95,7 +110,7 @@ class Amplify
             'paymentDescription' => request()->description,
             'planId' => request()->planId
         ];
-
+        
         array_filter($data);
         $this->response = HttpUtilityService::makePostRequest($url, $data);
 
@@ -112,7 +127,7 @@ class Amplify
 
     public function setRedirectUrl()
     {
-        $this->redirectUrl = Config('amplify.redirectUrl');
+        $this->redirectUrl = Config::get('amplify.redirectUrl');
     }
 
     /**Redirect to the paymentUrl
@@ -136,8 +151,7 @@ class Amplify
 
     }
 
-    /**
-     * Verify the transaction
+    /**Verify the Transaction
      */
     public function transactionIsVerified()
     {
@@ -145,8 +159,12 @@ class Amplify
         $data = ['transactionRef' => request()->tran_response, 'merchantId' => request()->merchantId];
         $this->response = HttpUtilityService::makeGetRequest($data, $url);
 
-        return $this->response["StatusDesc"] == 'Approved' ? true : false;
+        if(is_array($this->response) && array_has($this->response,"StatusDesc")){
+            return $this->response["StatusDesc"] == 'Approved' ? true : false;
 
+        }else{
+            throw new Exception($this->response);
+        }
     }
 
     /** Charge returning customers
