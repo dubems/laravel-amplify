@@ -42,7 +42,7 @@ class Amplify
     }
 
     /**
-     * 
+     *
      */
     public function setAPIKey()
     {
@@ -50,7 +50,7 @@ class Amplify
     }
 
     /**
-     * 
+     *
      */
     public function setMerchantId()
     {
@@ -58,7 +58,7 @@ class Amplify
     }
 
     /**
-     * Generate Transaction ID each transaction
+     * Generate Transaction ID for each transaction
      */
     public function generateTransId()
     {
@@ -68,7 +68,7 @@ class Amplify
         $arrayPool = array_merge($numberPool, $alphaPool, $upperCaseAlphaPool);
         shuffle($arrayPool);
         $result = array_slice($arrayPool, 0, 16);
-        $tranxId = implode('',$result);
+        $tranxId = implode('', $result);
 
         return $tranxId;
     }
@@ -82,11 +82,11 @@ class Amplify
     public function getAuthorizationUrl()
     {
         $this->initiatePayment();
-        if( is_array($this->response) && array_has($this->response,'PaymentUrl')){
+        if (is_array($this->response) && array_has($this->response, 'PaymentUrl')) {
             $this->paymentUrl = $this->response['PaymentUrl'];
             return $this;
 
-        }else{
+        } else {
             throw new Exception($this->response);
         }
     }
@@ -98,21 +98,33 @@ class Amplify
      */
     public function initiatePayment()
     {
-        $url = '/merchant/transact';
+        $uri = '/merchant/transact';
+//        $data = [
+//            'merchantId' => $this->merchantId,
+//            'apiKey' => $this->apikey,
+//            'transID' => $this->generateTransId(),
+//            'customerEmail' => request()->email,
+//            'customerName' => request()->name,
+//            'Amount' => request()->amount,
+//            'redirectUrl' => $this->getRedirectUrl(),
+//            'paymentDescription' => request()->description,
+//            'planId' => request()->planId
+//        ];
+
         $data = [
             'merchantId' => $this->merchantId,
             'apiKey' => $this->apikey,
             'transID' => $this->generateTransId(),
-            'customerEmail' => request()->email,
-            'customerName' => request()->name,
-            'Amount' => request()->amount,
+            'customerEmail' => 'dubem@gmail.com',
+            'customerName' => 'duby',
+            'Amount' => '21',
             'redirectUrl' => $this->getRedirectUrl(),
             'paymentDescription' => request()->description,
             'planId' => request()->planId
         ];
-        
+
         array_filter($data);
-        $this->response = HttpUtilityService::makePostRequest($url, $data);
+        $this->response = HttpUtilityService::makePostRequest($uri, $data);
 
         return $this;
     }
@@ -155,14 +167,14 @@ class Amplify
      */
     public function transactionIsVerified()
     {
-        $url = '/merchant/verify';
+        $uri = '/merchant/verify';
         $data = ['transactionRef' => request()->tran_response, 'merchantId' => request()->merchantId];
-        $this->response = HttpUtilityService::makeGetRequest($data, $url);
+        $this->response = HttpUtilityService::makeGetRequest($data, $uri);
 
-        if(is_array($this->response) && array_has($this->response,"StatusDesc")){
+        if (is_array($this->response) && array_has($this->response, "StatusDesc")) {
             return $this->response["StatusDesc"] == 'Approved' ? true : false;
 
-        }else{
+        } else {
             throw new Exception($this->response);
         }
     }
@@ -179,7 +191,7 @@ class Amplify
      */
     public function chargeReturningCustomer(array $data)
     {
-        $url = '/merchant/returning/charge';
+        $uri = '/merchant/returning/charge';
 
         $payload = [
             'merchantId' => $this->merchantId,
@@ -191,18 +203,19 @@ class Amplify
             'customerEmail' => $data["customerEmail"]
         ];
 
-        return HttpUtilityService::makePostRequest($url, $payload);
+        return HttpUtilityService::makePostRequest($uri, $payload);
     }
 
     /** Create Subscription
      *
      * @param $data
+     * $data[planName=>plan,frequency=>frequency]
      * @return mixed|string
      */
     public function createSubscription(array $data)
     {
         if ($this->validateFrequency($data)) {
-            $url = '/merchant/plan';
+            $uri = '/merchant/plan';
             $payload = [
                 'merchantId' => $this->merchantId,
                 'apiKey' => $this->apikey,
@@ -211,7 +224,7 @@ class Amplify
 
             ];
 
-            $this->response = HttpUtilityService::makePostRequest($url, $payload);
+            $this->response = HttpUtilityService::makePostRequest($uri, $payload);
         }
 
         return $this->response ? $this->response : null;
@@ -246,7 +259,7 @@ class Amplify
     public function updateSubscription($planId, array $data)
     {
         if ($this->validateFrequency($data)) {
-            $url = '/merchant/plan';
+            $uri = '/merchant/plan';
             $queryParams = ['PlanId' => $planId];
 
             $payload = [
@@ -257,7 +270,7 @@ class Amplify
 
             ];
 
-            $this->response = HttpUtilityService::makePutRequest($url, $queryParams, $payload);
+            $this->response = HttpUtilityService::makePutRequest($uri, $queryParams, $payload);
         }
 
         return $this->response ? $this->response : null;
@@ -271,7 +284,7 @@ class Amplify
      */
     public function unsubscribeCustomer(array $data)
     {
-        $url = '/merchant/subscription/cancel';
+        $uri = '/merchant/subscription/cancel';
         $payload = [
             'merchantId' => $this->merchantId,
             'apiKey' => $this->apikey,
@@ -280,18 +293,24 @@ class Amplify
             'planId' => $data['planId']
         ];
 
-        return HttpUtilityService::makePostRequest($url, $payload);
+        return HttpUtilityService::makePostRequest($uri, $payload);
     }
 
     /**Fetch Subscription
      *
-     * @param $data : ['planId'=>123]
+     * @param $id
      * @return mixed|string
+     * @throws Exception
      */
-    public function fetchSubscription($data)
+    public function fetchSubscription($id)
     {
-        $url = '/merchant/plan';
-        return HttpUtilityService::makeGetRequest($data, $url);
+        $uri = '/merchant/plan';
+        if ($id) {
+            $data = ['planId' => $id];
+            return HttpUtilityService::makeGetRequest($data, $uri);
+        }
+
+        throw new Exception('Kindly provide the subscription id');
     }
 
     /**Fetch all subscription
@@ -300,13 +319,34 @@ class Amplify
      */
     public function fetchAllSubscription()
     {
-        $url = '/merchant/plan';
+        $uri = '/merchant/plan';
         $payload = [
             'merchantId' => $this->merchantId,
             'apiKey' => $this->apikey
         ];
 
-        return HttpUtilityService::makeGetRequest($payload, $url);
+        return HttpUtilityService::makeGetRequest($payload, $uri);
+    }
+
+    /**
+     * Delete Subscription
+     * @param $planId
+     * @return mixed|string
+     * @throws Exception
+     */
+    public function deleteSubscription($planId)
+    {
+        $uri = '/merchant/plan';
+        if($planId){
+            $params = ['planId' => $planId,
+                'merchantId' => $this->merchantId,
+                'apiKey' => $this->apikey
+            ];
+
+            return HttpUtilityService::makeDeleteRequest($uri,$params);
+        }
+
+        throw new Exception('Kindly provide the planId');
     }
 
 }

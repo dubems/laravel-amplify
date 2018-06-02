@@ -94,4 +94,30 @@ class HttpUtilityService
         }
     }
 
+    /**Make delete Request
+     *
+     * @param $url
+     * @param $queryParam
+     * @return mixed|string
+     */
+    public static function makeDeleteRequest($url, $queryParam)
+    {
+        $client = new Client([
+            'base_uri' => Config::get('amplify.paymentUrl'),
+        ]);
+
+        try {
+            $response = $client->request('DELETE', $url, [
+                'query' => $queryParam,
+            ]);
+
+            $responseData = $response->getBody()->getContents();
+
+            return \GuzzleHttp\json_decode($responseData, true);
+
+        } catch (Exception $ex) {
+            return $ex->getMessage();
+        }
+    }
+
 }
