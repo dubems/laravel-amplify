@@ -99,30 +99,18 @@ class Amplify
     public function initiatePayment()
     {
         $uri = '/merchant/transact';
-//        $data = [
-//            'merchantId' => $this->merchantId,
-//            'apiKey' => $this->apikey,
-//            'transID' => $this->generateTransId(),
-//            'customerEmail' => request()->email,
-//            'customerName' => request()->name,
-//            'Amount' => request()->amount,
-//            'redirectUrl' => $this->getRedirectUrl(),
-//            'paymentDescription' => request()->description,
-//            'planId' => request()->planId
-//        ];
-
         $data = [
             'merchantId' => $this->merchantId,
             'apiKey' => $this->apikey,
             'transID' => $this->generateTransId(),
-            'customerEmail' => 'dubem@gmail.com',
-            'customerName' => 'duby',
-            'Amount' => '21',
+            'customerEmail' => request()->email,
+            'customerName' => request()->name,
+            'Amount' => request()->amount,
             'redirectUrl' => $this->getRedirectUrl(),
             'paymentDescription' => request()->description,
             'planId' => request()->planId
         ];
-
+        
         array_filter($data);
         $this->response = HttpUtilityService::makePostRequest($uri, $data);
 
@@ -347,6 +335,6 @@ class Amplify
         }
 
         throw new Exception('Kindly provide the planId');
-    }
+    } 
 
 }
