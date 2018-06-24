@@ -21,7 +21,7 @@ Also, register the Facade like so:
 ```php
 'aliases' => [
     ...
-    'Amplify' => Dubems\Ampify\Facades\Amplify::class,
+    'Amplify' => Dubems\Amplify\Facades\Amplify::class,
     ...
 ]
 ```
